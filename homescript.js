@@ -1,54 +1,60 @@
-const params = new URLSearchParams();
+async function main() {
 
-params.append('grant_type', 'client_credentials');
-params.append('scope', 'device_full_access');
+  const params = new URLSearchParams();
 
-const client_id = 'FILL_IN_APPKEY';
-const client_secret = 'FILL_IN_APPSECRET';
-const credentials = Buffer.from(client_id + ':' + client_secret).toString('base64');
+  params.append('grant_type', 'client_credentials');
+  params.append('scope', 'device_full_access');
 
-var result = await fetch("https://oauth.cleargrass.com/oauth2/token", {
-  method: 'post',
-  headers: {
-    'Authorization': 'Basic ' + credentials,
-  },
-  body: params,
-});
+  // Get from https://developer.qingping.co/personal/permissionApply
+  const client_id = process.env.APP_KEY // 'FILL_IN_APPKEY';
+  const client_secret = process.env.APP_SECRET // 'FILL_IN_APPSECRET';
+  const credentials = Buffer.from(client_id + ':' + client_secret).toString('base64');
 
-if (!result.ok)   throw new Error(result.statusText);
+  var result = await fetch("https://oauth.cleargrass.com/oauth2/token", {
+    method: 'post',
+    headers: {
+      'Authorization': 'Basic ' + credentials,
+    },
+    body: params,
+  });
 
-const body = await result.json();
+  if (!result.ok)   throw new Error(result.statusText);
 
-console.log(body)
+  const body = await result.json();
 
-var access_token = body.access_token;
+  console.log(body)
 
-await tag("qingping_access_token", access_token);
+  var access_token = body.access_token;
 
-// get device data
+  await tag("qingping_access_token", access_token);
 
-var result = await fetch("https://apis.cleargrass.com/v1/apis/devices?timestamp=" + Date.now().toString(), {
-  method: 'get',
-  headers: {
-    'Authorization': 'Bearer ' + access_token,
-  },
-});
+  // get device data
 
-if (!result.ok)   throw new Error(result.statusText);
+  var result = await fetch("https://apis.cleargrass.com/v1/apis/devices?timestamp=" + Date.now().toString(), {
+    method: 'get',
+    headers: {
+      'Authorization': 'Bearer ' + access_token,
+    },
+  });
 
-const body2 = await result.json();
+  if (!result.ok)   throw new Error(result.statusText);
 
-var data = body2.devices[0].data
+  const body2 = await result.json();
 
-console.log(data)
+  var data = body2.devices[0].data
 
-var {timestamp,temperature,humidity,  co2,pm25, pm10} = data;
+  console.log(data)
 
-console.log(timestamp,temperature,humidity,  co2,pm25, pm10);
+  var {timestamp,temperature,humidity,  co2,pm25, pm10} = data;
 
-await tag("qingping_timestamp", timestamp.value);
-await tag("qingping_temperature", temperature.value);
-await tag("qingping_humidity", humidity.value);
-await tag("qingping_co2", co2.value);
-await tag("qingping_pm25", pm25.value);
-await tag("qingping_pm10", pm10.value);
+  console.log(timestamp,temperature,humidity,  co2,pm25, pm10);
+
+  await tag("qingping_timestamp", timestamp.value);
+  await tag("qingping_temperature", temperature.value);
+  await tag("qingping_humidity", humidity.value);
+  await tag("qingping_co2", co2.value);
+  await tag("qingping_pm25", pm25.value);
+  await tag("qingping_pm10", pm10.value);
+}
+
+main()
