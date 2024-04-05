@@ -8,7 +8,7 @@ export const settings = {
         // 1 - Show only when something is slightly wrong
         // 2 - Show only when something is wrong
         // 3 - Show only when something is very wrong
-        verbosity_level: 1,
+        verbosity_level: 0,
 
         show_sensor_data: true,
         show_emoji_status: true,
@@ -21,8 +21,8 @@ export const settings = {
             'humidity',
             'temperature',
             'aqi_worst',
-            'aqi_pm25',
-            'aqi_pm10',
+            // 'aqi_pm25',
+            // 'aqi_pm10',
         ],
 
     },

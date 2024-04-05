@@ -1,0 +1,53 @@
+# How to install:
+# pre-commit install --install-hooks && pre-commit install --install-hooks -t commit-msg
+
+default_language_version:
+  python: python3
+
+# How temporary skip one of hooks: https://pre-commit.com/#temporarily-disabling-hooks
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      # Git style
+      - id: check-added-large-files # prevents giant files from being committed.
+      - id: check-vcs-permalinks # ensures that links to vcs websites are permalinks.
+      - id: forbid-new-submodules # prevents addition of new git submodules.
+      - id: no-commit-to-branch # don't commit to branch
+
+      # Common errors
+      - id: trailing-whitespace # trims trailing whitespace.
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer # ensures that a file is either empty, or ends with one newline.
+        exclude: ".*\\.mmd"
+      - id: check-merge-conflict # checks for files that contain merge conflict strings.
+      - id: check-executables-have-shebangs # ensures that (non-binary) executables have a shebang.
+        exclude: .devcontainer #this hook doesn't like comment characters at the top of any file...
+
+      # Cross platform
+      - id: check-case-conflict # checks for files that would conflict in case-insensitive filesystems.
+      - id: mixed-line-ending # replaces or checks mixed line ending.
+        args: [--fix=lf]
+
+      # Security
+      - id: detect-aws-credentials # detects *your* aws credentials from the aws cli credentials file.
+        args: ['--allow-missing-credentials']
+      - id: detect-private-key # detects the presence of private keys.
+        exclude: |
+          (?x)
+            # Have multi-line value example
+            docs/developer/chamber.md
+
+      # TOML
+      - id: check-toml # checks toml files for parseable syntax.
+
+      # Python
+      - id: check-ast # simply checks whether the files parse as valid python.
+      - id: check-builtin-literals # requires literal syntax when initializing empty or zero python builtin types.
+      - id: check-docstring-first # checks a common error of defining a docstring after code.
+      - id: debug-statements # checks for debugger imports and py37+ `breakpoint()` calls in python source.
+
+      # Symlinks
+      - id: check-symlinks # checks for symlinks which do not point to anything.
+      - id: destroyed-symlinks # detects symlinks which are changed to regular files with a content of a path which that symlink was pointing to.

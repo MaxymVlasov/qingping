@@ -1,0 +1,33 @@
+name: Common issues check
+
+on: [pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - run: |
+        git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+
+    - name: Get changed files
+      id: file_changes
+      run: |
+        export DIFF=$(git diff --name-only origin/${{ github.base_ref }} ${{ github.sha }})
+        echo "Diff between ${{ github.base_ref }} and ${{ github.sha }}"
+        echo "files=$( echo "$DIFF" | xargs echo )" >> $GITHUB_OUTPUT
+
+    # Need to success pre-commit fix push
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+    # Skip terraform_tflint which interferes to commit pre-commit auto-fixes
+    - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+      with:
+        python-version: '3.9'
+    - name: Execute pre-commit
+      uses: pre-commit/action@9b88afc9cd57fd75b655d5c71bd38146d07135fe # v2.0.3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        extra_args: --color=always --show-diff-on-failure --files ${{ steps.file_changes.outputs.files }}
